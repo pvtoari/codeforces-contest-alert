@@ -5,6 +5,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.json.JSONArray;
 
+import com.pvtoari.bot.Config;
+
 import java.io.IOException;
 import java.util.*;
 
@@ -12,7 +14,7 @@ import org.apache.http.HttpResponse;
 
 public class Requests {
 
-    private static String getRawCodeforcesContests() {
+    public static String getRawCodeforcesContests() {
         String res = "";
 
         CloseableHttpClient client = HttpClients.createDefault();
@@ -24,7 +26,7 @@ public class Requests {
             response = client.execute(request);
             sc = new Scanner(response.getEntity().getContent());
     
-            res += response.getStatusLine() + "\n";
+            //res += response.getStatusLine() + "\n";
             while(sc.hasNext()) {
                 res += sc.nextLine() + "\n";
             }

@@ -1,8 +1,9 @@
 package com.pvtoari;
 
 import org.telegram.telegrambots.longpolling.*;
-import com.pvtoari.utils.BotCore;
-import com.pvtoari.utils.Config;
+
+import com.pvtoari.bot.BotCore;
+import com.pvtoari.bot.Config;
 
 public class Main {
     public static void main(String[] args) {

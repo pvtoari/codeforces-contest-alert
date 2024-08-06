@@ -10,6 +10,12 @@
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
+# Txt files
+*.txt
+
+# Ignored directories
+/old/Requests.java
+
 # Package Files #
 *.jar
 *.war

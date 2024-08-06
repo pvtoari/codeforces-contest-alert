@@ -1,4 +1,4 @@
-package com.pvtoari.utils;
+package com.pvtoari.bot;
 
 import java.util.ArrayList;
 
@@ -8,6 +8,8 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
+
+import com.pvtoari.utils.Requests;
 
 public class BotCore implements LongPollingSingleThreadUpdateConsumer {
     private TelegramClient client = new OkHttpTelegramClient(Config.BOT_TOKEN);
@@ -37,9 +39,35 @@ public class BotCore implements LongPollingSingleThreadUpdateConsumer {
                 sendPlainText(update, chat_id, "Warning: This command sends the raw content of the Codeforces API. \n\nIt may be too long to be displayed in a single message and could cause performance troubles. Do you want to continue? (yes/no). \n\nConfirm before five seconds.");
                 awaitingRawContent = true;
                 break;
+            case "/filteredRaw":
+                sendRawFilteredContent(update, chat_id);
+                break;
             default:
                 sendPlainText(update, chat_id, Config.UNKNOWN_COMMAND_MSG);
         }
+    }
+
+    private void sendRawFilteredContent(Update update, long chat_id) {
+        String messageContent = Requests.getRawCodeforcesContests();
+        char[] contentChars = messageContent.toCharArray();
+        int stoppingIndex = messageContent.indexOf("\"phase\":\"FINISHED\"");
+        int deletingCurlyBraceIndex = stoppingIndex;
+            
+        while(contentChars[deletingCurlyBraceIndex] != '{') {
+            contentChars[deletingCurlyBraceIndex] = 0;
+            deletingCurlyBraceIndex--;
+        }
+            
+        contentChars[deletingCurlyBraceIndex] = 0;
+        contentChars[deletingCurlyBraceIndex-1] = 0;
+            
+        int beautifyIndex = messageContent.indexOf("[");
+        for(int i = 0; i <= beautifyIndex; i++) {
+            contentChars[i] = 0;
+        }
+            
+        String newContent = new String(contentChars).substring(0, stoppingIndex);
+        sendPlainText(update, chat_id, newContent);
     }
 
     private void sendFullRawContent(Update update, long chat_id) {
