@@ -14,7 +14,7 @@
 *.txt
 
 # Ignored directories
-/old/Requests.java
+/old/*
 
 # Package Files #
 *.jar

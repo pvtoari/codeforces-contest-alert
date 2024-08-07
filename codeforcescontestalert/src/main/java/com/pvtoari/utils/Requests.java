@@ -3,7 +3,6 @@ package com.pvtoari.utils;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.json.JSONArray;
 
 import com.pvtoari.bot.Config;
 
@@ -18,6 +17,7 @@ public class Requests {
         String res = "";
 
         CloseableHttpClient client = HttpClients.createDefault();
+        Tracer.log(Tracer.HIGH_RISK, "Attempting to send a GET request to " + Config.CODEFORCES_API+ "... Big volume of requests in a short period of time may cause IP ban.");  
         HttpGet request = new HttpGet(Config.CODEFORCES_API);
         HttpResponse response = null;
         Scanner sc = null;
@@ -25,19 +25,23 @@ public class Requests {
         try {
             response = client.execute(request);
             sc = new Scanner(response.getEntity().getContent());
-    
+            Tracer.log(Tracer.INFO, "GET request returned " + response.getStatusLine());
             //res += response.getStatusLine() + "\n";
             while(sc.hasNext()) {
                 res += sc.nextLine() + "\n";
             }
         } catch (Exception e) {
             e.printStackTrace();
+            Tracer.log(Tracer.HIGH_RISK, "Failure while performing GET request to Codeforces API.");
         } finally {
             try {
                 client.close();
                 sc.close();
+
+                Tracer.log(Tracer.INFO, "Closeable resources closed due to end of GET request.");
             } catch (IOException e) {
                 e.printStackTrace();
+                Tracer.log(Tracer.MEDIUM_RISK, "Failure while closing closeable resources.");
             }
         }
 
@@ -45,17 +49,21 @@ public class Requests {
     }
 
     private static void splitBy4096(int length, String raw, ArrayList<String> res) {
+        Tracer.log(Tracer.LOW_RISK, "Raw content splitting is running...");
         int nSplits = length/4096;
         int remaining = length%4096;
 
+        
         for(int i = 0; i < nSplits; i++) {
             res.add(raw.substring(i*4096, (i+1)*4096));
         }
-
+        
         // añadir el resto de la cadena
         if(remaining > 0) {
             res.add(raw.substring(nSplits*4096, length));
         }
+        
+        Tracer.log(Tracer.MEDIUM_RISK, "Raw content length: " + length + "splitted into " + nSplits + " parts with " + remaining + " remaining characters.");
     }
 
     public static ArrayList<String> getSplittedRawCodeforcesContests() {
@@ -70,7 +78,44 @@ public class Requests {
         return res;
     }
 
-    public static void getJsonedCodeforcesContests() {
-        // TODO: use org.json.JSONArray and stuff
+    public static String getRawFilteredContent() {
+
+        Tracer.log(Tracer.HIGH_RISK, "Invoking raw content obtention...");
+        String messageContent = getRawCodeforcesContests();
+        Tracer.log(Tracer.LOW_RISK, "Filtering raw content...");
+        char[] contentChars = messageContent.toCharArray();
+        int stoppingIndex = messageContent.indexOf("\"phase\":\"FINISHED\"");
+        int deletingCurlyBraceIndex = stoppingIndex;
+            
+        while(contentChars[deletingCurlyBraceIndex] != '{') {
+            contentChars[deletingCurlyBraceIndex] = 0;
+            deletingCurlyBraceIndex--;
+        }
+            
+        contentChars[deletingCurlyBraceIndex] = 0;
+        contentChars[deletingCurlyBraceIndex-1] = 0;
+            
+        int beautifyIndex = messageContent.indexOf("[");
+        for(int i = 0; i <= beautifyIndex; i++) {
+            contentChars[i] = 0;
+        }
+            
+        String newContent = new String(contentChars).substring(0, stoppingIndex);
+        Tracer.log(Tracer.INFO, "Finished filtering raw content");
+
+        return newContent;
+    }
+
+    public static String getFormatedUpcomingContests() {
+        String res = "";
+        Tracer.log(Tracer.LOW_RISK, "Parsing filtered data...");
+        Contest[] contests = Contest.parseRawFilteredData(getRawFilteredContent());
+
+        Tracer.log(Tracer.LOW_RISK, "Generating formatted content...");
+        for(Contest contest : contests) {
+            res += contest.getFormattedMessageContent() + "\n";
+        }
+
+        return res;
     }
 }
