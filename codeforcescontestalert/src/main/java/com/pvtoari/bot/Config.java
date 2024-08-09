@@ -1,11 +1,43 @@
 package com.pvtoari.bot;
 
-public class Config {
-    public static boolean debug = true;
+import java.util.*;
+import java.io.*;
 
-    public static final String BOT_TOKEN = "";
-    public static final String CODEFORCES_API = "https://codeforces.com/api/contest.list";
-    public static final String DEFAULT_MSG = "Hello, I am a bot that sends you the list of upcoming Codeforces contests. Type /help to know more.";
-    public static final String HELP_MSG = "List of commands: \n/help - Shows this message \n/upcoming Displays upcoming Codeforces contests \n/raw - Sends the raw content of the Codeforces API \n/filteredRaw - Sends the filtered raw content of the Codeforces API \n/start - Starts the bot \n";
-    public static final String UNKNOWN_COMMAND_MSG = "Unknown command. Type /help to know more.";
+public class Config {
+
+    public static Boolean debug = true;
+    public static String BOT_TOKEN = null;
+    public static String CODEFORCES_API = null;
+    public static String DEFAULT_MSG = null;
+    public static String HELP_MSG = null;
+    public static String UNKNOWN_COMMAND_MSG = null;
+
+    private static String[] parseFieldsFromPropertiesFile() {
+        String[] res = new String[6];
+
+        try (Scanner fr = new Scanner(new File("files/config.properties"))) {
+            for(int i = 0; fr.hasNext();) {
+                String line = fr.nextLine();
+
+                if(line.startsWith("#")) continue;
+                res[i] = line.substring(line.indexOf("=") + 1).trim();
+                i++;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return res;
+    }
+
+    public static void loadAndSetFields() {
+        String[] fields = parseFieldsFromPropertiesFile();
+
+        debug = Boolean.parseBoolean(fields[0]);
+        BOT_TOKEN = fields[1];
+        CODEFORCES_API = fields[2];
+        DEFAULT_MSG = fields[3];
+        HELP_MSG = fields[4].replace("\\n", "\n");
+        UNKNOWN_COMMAND_MSG = fields[5];
+    }
 }

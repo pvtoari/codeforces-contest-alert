@@ -141,6 +141,11 @@ public class Contest {
 
         // cux this is ur fault
 
+        if(rawData.equals("fail")) {
+            Tracer.log(Tracer.HIGH_RISK, "Filtered data parsing failed. Aborting formatted content generation.");
+            return null;
+        }
+
         Contest[] res = null;
 
         String[] firstSplitting = rawData.split("\\{");

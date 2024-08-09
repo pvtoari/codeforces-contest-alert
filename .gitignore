@@ -15,6 +15,7 @@
 
 # Ignored directories
 /old/*
+/files/*
 
 # Package Files #
 *.jar

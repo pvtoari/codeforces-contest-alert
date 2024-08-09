@@ -2,13 +2,15 @@ package com.pvtoari;
 
 import org.telegram.telegrambots.longpolling.*;
 
-import com.pvtoari.bot.BotCore;
-import com.pvtoari.bot.Config;
-import com.pvtoari.utils.Tracer;
+import com.pvtoari.bot.*;
+import com.pvtoari.utils.*;
 
 public class Main {
     public static void main(String[] args) {
         Tracer.log(Tracer.INFO, "Attempting to start the bot...");
+
+        BotSetup setup = new BotSetup();
+        setup.start();
 
         try (TelegramBotsLongPollingApplication botApp = new TelegramBotsLongPollingApplication()) {
             botApp.registerBot(Config.BOT_TOKEN, new BotCore());

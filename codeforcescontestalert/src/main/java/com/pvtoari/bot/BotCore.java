@@ -79,6 +79,11 @@ public class BotCore implements LongPollingSingleThreadUpdateConsumer {
         Tracer.log(Tracer.HIGH_RISK, "Splitted raw content is being sent to " + user + "... API may be overloaded and data delivery may be delayed.");
         int i = 0;
         ArrayList<String> messages = Requests.getSplittedRawCodeforcesContests();
+        if(messages == null) {
+            Tracer.log(Tracer.HIGH_RISK, "Raw content splitting failed. Aborting raw content sending.");
+            sendPlainText(update, chat_id, "An error ocurred while processing your request. Please try again later.");
+        }
+
             for(String messageText : messages) {
                 i++;
                 SendMessage message = SendMessage

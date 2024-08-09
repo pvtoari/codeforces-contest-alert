@@ -24,9 +24,12 @@ public class Requests {
 
         try {
             response = client.execute(request);
+            int statusCode = response.getStatusLine().getStatusCode();
             sc = new Scanner(response.getEntity().getContent());
-            Tracer.log(Tracer.INFO, "GET request returned " + response.getStatusLine());
-            //res += response.getStatusLine() + "\n";
+            Tracer.log(Tracer.INFO, "GET request returned code " + (statusCode==200 ? "200, performing further operations..." : statusCode + ", aborting GET request."));
+            
+            if(statusCode != 200) return "fail";
+
             while(sc.hasNext()) {
                 res += sc.nextLine() + "\n";
             }
@@ -70,6 +73,11 @@ public class Requests {
         ArrayList<String> res = new ArrayList<>();
         String raw = getRawCodeforcesContests();
 
+        if(raw.equals("fail")) {
+            Tracer.log(Tracer.HIGH_RISK, "Raw content obtention failed. Aborting raw content splitting.");
+            return null;
+        }
+
         if(raw.length() > 4096) {
             splitBy4096(raw.length(), raw, res);
         } else {
@@ -82,6 +90,12 @@ public class Requests {
 
         Tracer.log(Tracer.HIGH_RISK, "Invoking raw content obtention...");
         String messageContent = getRawCodeforcesContests();
+
+        if(messageContent.equals("fail")) {
+            Tracer.log(Tracer.HIGH_RISK, "Raw content obtention failed. Aborting filtered content obtention.");
+            return "fail";
+        }
+
         Tracer.log(Tracer.LOW_RISK, "Filtering raw content...");
         char[] contentChars = messageContent.toCharArray();
         int stoppingIndex = messageContent.indexOf("\"phase\":\"FINISHED\"");
@@ -110,6 +124,11 @@ public class Requests {
         String res = "";
         Tracer.log(Tracer.LOW_RISK, "Parsing filtered data...");
         Contest[] contests = Contest.parseRawFilteredData(getRawFilteredContent());
+
+        if(contests == null) {
+            Tracer.log(Tracer.HIGH_RISK, "Filtered data parsing failed. Aborting formatted content generation.");
+            return "An error ocurred while processing your request. Please try again later.";
+        }
 
         Tracer.log(Tracer.LOW_RISK, "Generating formatted content...");
         for(Contest contest : contests) {

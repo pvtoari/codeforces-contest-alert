@@ -50,7 +50,7 @@ public class Tracer {
         Date now = new Date();
         String date = sdf.format(now);
 
-        File file = new File("log-" + date + ".txt");
+        File file = new File("files/logs/log-" + date + ".txt");
         if(!file.exists()) {
             file.createNewFile();
         }
