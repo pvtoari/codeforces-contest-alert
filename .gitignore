@@ -16,6 +16,7 @@
 # Ignored directories
 /old/*
 /files/*
+codeforcescontestalert/target/*
 
 # Package Files #
 *.jar

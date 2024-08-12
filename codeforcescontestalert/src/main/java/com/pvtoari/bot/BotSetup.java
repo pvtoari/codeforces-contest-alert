@@ -1,6 +1,7 @@
 package com.pvtoari.bot;
 
 import java.io.*;
+import java.util.Scanner;
 
 public class BotSetup {
     public void start() {
@@ -16,6 +17,8 @@ public class BotSetup {
                 fw.write("debug=true\n");
                 fw.write("BOT_TOKEN=\n");
                 fw.write("CODEFORCES_API=https://codeforces.com/api/contest.list\n");
+                fw.write("# in hours\n");
+                fw.write("API_REQUEST_FREQUENCY=12\n");
                 fw.write("# Messages, dont use quotes, Java scape characters are supported\n");
                 fw.write("DEFAULT_MSG=Hello, I am a bot that sends you the list of upcoming Codeforces contests. Type /help to know more.\n");
                 fw.write("HELP_MSG=List of commands: \\n/help - Shows this message \\n/upcoming Displays upcoming Codeforces contests \\n/raw - Sends the raw content of the Codeforces API \\n/filteredRaw - Sends the filtered raw content of the Codeforces API \\n/start - Starts the bot \n");
@@ -30,13 +33,35 @@ public class BotSetup {
                 System.out.println("Failed to set up the bot, check permissions and try again.\n");
                 e.printStackTrace();}
         } else {
-            Config.loadAndSetFields();
+            //Config.loadAndSetFields();
+            //System.out.println("Bot is already set up.");
+            
+            try {
+                Config.loadAndSetFields();
+            } catch (Exception e) {
+                System.out.println("An error ocurred while trying to access config.properties file. There's a high probability that this is caused due to corrupt data, do you want to regenerate the config file? THE FILE WILL BE CLEARED (y/n)");
+                Scanner sc = new Scanner(System.in);
+                if(sc.nextLine().equals("y")) {
+                    regenerateConfig();
+                } else {
+                    System.out.println("Check the config file and try again. Exiting...");
+                    System.exit(0);
+                }
+                sc.close();
+                regenerateConfig();
+            }
             System.out.println("Bot is already set up.");
+            
         }
 
     }
 
     public boolean isSetup() {
         return new File("files").exists() && new File("files/config.properties").exists() && new File("files/logs").exists();
+    }
+
+    public void regenerateConfig() {
+        new File("files/config.properties").delete();
+        start();
     }
 }

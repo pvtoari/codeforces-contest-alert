@@ -123,7 +123,9 @@ public class Requests {
     public static String getFormatedUpcomingContests() {
         String res = "";
         Tracer.log(Tracer.LOW_RISK, "Parsing filtered data...");
-        Contest[] contests = Contest.parseRawFilteredData(getRawFilteredContent());
+        //Contest[] contests = Contest.parseRawFilteredData(getRawFilteredContent()); this line is replaced by the new handler
+        Contest[] contests = Contest.parseRawFilteredData(ContestHandler.getRawFilteredContentv2());
+        Arrays.sort(contests, new DescendingContestComparator());
 
         if(contests == null) {
             Tracer.log(Tracer.HIGH_RISK, "Filtered data parsing failed. Aborting formatted content generation.");
@@ -136,5 +138,12 @@ public class Requests {
         }
 
         return res;
+    }
+
+    public static class DescendingContestComparator implements Comparator<Contest> {
+        @Override
+        public int compare(Contest c1, Contest c2) {
+            return c2.compareTo(c1);
+        }
     }
 }

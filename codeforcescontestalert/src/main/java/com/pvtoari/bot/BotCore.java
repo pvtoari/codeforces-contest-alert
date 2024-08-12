@@ -1,6 +1,7 @@
 package com.pvtoari.bot;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
@@ -9,6 +10,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
+import com.pvtoari.utils.ContestHandler;
 import com.pvtoari.utils.Requests;
 import com.pvtoari.utils.Tracer;
 
@@ -18,7 +20,10 @@ public class BotCore implements LongPollingSingleThreadUpdateConsumer {
     
     @Override
     public void consume(Update update) {
-        if(update.hasMessage() && update.getMessage().hasText()) {
+        
+        
+        if(update.hasMessage() && update.getMessage().hasText() && tryIgnoreByTime(update)) {
+
             long chat_id = update.getMessage().getChatId();
             String messageText = update.getMessage().getText();
             String user = getUser(update);
@@ -71,7 +76,8 @@ public class BotCore implements LongPollingSingleThreadUpdateConsumer {
         String user = getUser(update);
 
         Tracer.log(Tracer.INFO, "Sending filtered raw content to user " + user);
-        sendPlainText(update, chat_id, Requests.getRawFilteredContent());
+        //sendPlainText(update, chat_id, Requests.getRawFilteredContent()); this line is replaced by the new handler
+        sendPlainText(update, chat_id, ContestHandler.getRawFilteredContentv2());
     }
 
     private void sendFullRawContent(Update update, long chat_id) {
@@ -156,5 +162,16 @@ public class BotCore implements LongPollingSingleThreadUpdateConsumer {
         }
 
         return res;
+    }
+
+    private boolean tryIgnoreByTime(Update update) {
+        Date date = new Date((long)update.getMessage().getDate() * 1000);
+        if(new Date().getTime() - date.getTime() > 300000) {
+            Tracer.log(Tracer.LOW_RISK, "Ignoring message from " + getUser(update) + " due to time.");
+            return false;
+        } else {
+            Tracer.log(Tracer.INFO, "Message from " + getUser(update) + " is not being ignored.");
+            return true;
+        }
     }
 }

@@ -4,7 +4,7 @@ import java.util.Date;
 
 import com.vdurmont.emoji.EmojiParser;
 
-public class Contest {
+public class Contest implements Comparable<Contest> {
     private int id;
     private String name, type, phase;
     private boolean frozen;
@@ -111,6 +111,11 @@ public class Contest {
         return "Contest [id=" + id + ", name=" + name + ", type=" + type + ", phase=" + phase + ", frozen=" + frozen
                 + ", durationSeconds=" + durationSeconds + ", startTimeSeconds=" + startTimeSeconds
                 + ", relativeTimeSeconds=" + relativeTimeSeconds + "]";
+    }
+
+    @Override
+    public int compareTo(Contest o) {
+        return (int) (this.relativeTimeSeconds - o.relativeTimeSeconds);
     }
 
     public Date getDateTime() {
