@@ -125,17 +125,20 @@ public class Requests {
         Tracer.log(Tracer.LOW_RISK, "Parsing filtered data...");
         //Contest[] contests = Contest.parseRawFilteredData(getRawFilteredContent()); this line is replaced by the new handler
         Contest[] contests = Contest.parseRawFilteredData(ContestHandler.getRawFilteredContentv2());
-        Arrays.sort(contests, new DescendingContestComparator());
 
-        if(contests == null) {
-            Tracer.log(Tracer.HIGH_RISK, "Filtered data parsing failed. Aborting formatted content generation.");
-            return "An error ocurred while processing your request. Please try again later.";
+        if(contests==null) {
+            Tracer.log(Tracer.MEDIUM_RISK, "Contest array parsing returned empty array, message might not be sent.");
+            return res;
         }
+
+        Arrays.sort(contests, new DescendingContestComparator());
 
         Tracer.log(Tracer.LOW_RISK, "Generating formatted content...");
         for(Contest contest : contests) {
             res += contest.getFormattedMessageContent() + "\n";
         }
+
+        if(res.isBlank()) Tracer.log(Tracer.HIGH_RISK, "Formatting returned empty content, message might not be sent."); // in case the code reaches here, not probable, but just in case
 
         return res;
     }

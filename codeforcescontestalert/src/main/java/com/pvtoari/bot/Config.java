@@ -41,7 +41,7 @@ public class Config {
         debug = Boolean.parseBoolean(fields[0]);
         BOT_TOKEN = fields[1];
         CODEFORCES_API = fields[2];
-        API_REQUEST_FREQUENCY = Long.parseLong(fields[3])*36000000; // converting hours to millis
+        API_REQUEST_FREQUENCY = Long.parseLong(fields[3]); // converting hours to millis
         DEFAULT_MSG = fields[4];
         HELP_MSG = fields[5].replace("\\n", "\n");
         UNKNOWN_COMMAND_MSG = fields[6];

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Scanner;
 
 import com.pvtoari.bot.Config;
@@ -71,17 +72,23 @@ public class ContestHandler {
         Scanner sc = null;
         try {
             sc = new Scanner(rawFile);
-            String firstLine = "";
-
-            if(sc.hasNext()) {
-                firstLine = sc.nextLine();
+            String lines[] = new String[2];
+            
+            for(int i = 0; sc.hasNext(); i++) {
+                lines[i] = sc.nextLine();
             }
 
-            if(firstLine.contains("datemillis:")) {
-                String millis = firstLine.substring(firstLine.indexOf(":") + 1);
+            if(lines[1].contains("fail")) {
+                Tracer.log(Tracer.INFO, "Raw content is corrupted or wrong, next request will be from API.");
+                return true; // if the file is corrupted or the data is wrong, it will be considered outdated
+            }
+
+            if(lines[0].contains("datemillis:")) {
+                String millis = lines[0].substring(lines[0].indexOf(":") + 1);
                 long lastUpdate = Long.parseLong(millis);
                 long now = new Date().getTime();
 
+                Tracer.log(Tracer.INFO, "Last update: " + lastUpdate + " Current time: " + now + " Difference: " + (now - lastUpdate) + "ms / " + String.format(Locale.ENGLISH, "%.4f", (now - lastUpdate)/60000f) + "min / " +String.format(Locale.ENGLISH,"%.4f",(now - lastUpdate)/3600000f) + "h / ");
                 if((now - lastUpdate) < Config.API_REQUEST_FREQUENCY) {
                     res = false;
                 }
