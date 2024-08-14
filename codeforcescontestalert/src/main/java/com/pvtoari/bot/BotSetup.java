@@ -23,6 +23,11 @@ public class BotSetup {
                 fw.write("DEFAULT_MSG=Hello, I am a bot that sends you the list of upcoming Codeforces contests. Type /help to know more.\n");
                 fw.write("HELP_MSG=List of commands: \\n/help - Shows this message \\n/upcoming Displays upcoming Codeforces contests \\n/raw - Sends the raw content of the Codeforces API \\n/filteredRaw - Sends the filtered raw content of the Codeforces API \\n/start - Starts the bot \n");
                 fw.write("UNKNOWN_COMMAND_MSG=Unknown command. Type /help to know more.\n");
+                fw.write("# Discord webhook configuration\n");
+                fw.write("DISCORD_WEBHOOK_ENABLED=false\n");
+                fw.write("DISCORD_WEBHOOK_URL=\n");
+                fw.write("DISCORD_WEBHOOK_NAME=Codeforces Contest Alert\n");
+                fw.write("DISCORD_WEBHOOK_AVATAR=\n");
                 fw.close();
 
                 System.out.println("Bot set up successfully.");

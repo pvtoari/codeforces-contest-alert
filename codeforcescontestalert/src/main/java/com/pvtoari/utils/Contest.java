@@ -197,7 +197,7 @@ public class Contest implements Comparable<Contest> {
     }
 
     public String getFormattedMessageContent() {
-        return TROPHY + " Contest " + id + TROPHY + "\n\n"
+        return TROPHY + " Contest " + id + " " + TROPHY + "\n\n"
             + NAME_BADGE + " Name: " + name + "\n"
             + LABEL + " Type: " + type + "\n"
             + HOURGLASS + " Phase: " + phase + "\n"

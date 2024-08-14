@@ -5,16 +5,23 @@ import java.io.*;
 
 public class Config {
 
-    public static Boolean debug = true;
-    public static String BOT_TOKEN = null;
-    public static String CODEFORCES_API = null;
-    public static Long API_REQUEST_FREQUENCY = null; // in hours in config file but here is in millis for easier calculations
-    public static String DEFAULT_MSG = null;
-    public static String HELP_MSG = null;
-    public static String UNKNOWN_COMMAND_MSG = null;
+    public static Boolean debug=false;
+    public static String BOT_TOKEN;
+    public static String CODEFORCES_API;
+    // -------------------------------------- //
+    public static Long API_REQUEST_FREQUENCY; // in hours in config file but here is in millis for easier calculations
+    // -------------------------------------- //
+    public static String DEFAULT_MSG;
+    public static String HELP_MSG;
+    public static String UNKNOWN_COMMAND_MSG;
+    // -------------------------------------- //
+    public static boolean DISCORD_WEBHOOK_ENABLED;
+    public static String DISCORD_WEBHOOK_URL;
+    public static String DISCORD_WEBHOOK_NAME;
+    public static String DISCORD_WEBHOOK_AVATAR;
 
     private static String[] parseFieldsFromPropertiesFile() {
-        String[] res = new String[7];
+        String[] res = new String[11];
         Scanner fr = null;
 
         try {
@@ -45,5 +52,9 @@ public class Config {
         DEFAULT_MSG = fields[4];
         HELP_MSG = fields[5].replace("\\n", "\n");
         UNKNOWN_COMMAND_MSG = fields[6];
+        DISCORD_WEBHOOK_ENABLED = Boolean.parseBoolean(fields[7]);
+        DISCORD_WEBHOOK_URL = fields[8];
+        DISCORD_WEBHOOK_NAME = fields[9];
+        DISCORD_WEBHOOK_AVATAR = fields[10];
     }
 }

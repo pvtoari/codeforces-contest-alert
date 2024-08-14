@@ -11,7 +11,7 @@ import com.pvtoari.bot.Config;
 
 public class ContestHandler {
     /*
-     * TODO: This class will be responsible for handling correctly contest data and requests to the Codeforces API
+     * This class will be responsible for handling correctly contest data and requests to the Codeforces API
      * since its not correct to always request the API for the same data, this class will be responsible for
      * storing the data and updating it when necessary.
      * 
@@ -35,13 +35,33 @@ public class ContestHandler {
             res = Requests.getRawFilteredContent();
             saveRawContent(res, rawFile);
         } else {
-            Tracer.log(Tracer.INFO, "Raw content file found, checking if outdated...");
-            if(isContentOutdated(rawFile)) {
-                Tracer.log(Tracer.INFO, "Raw content is outdated, requesting from API and saving...");
+            Tracer.log(Tracer.INFO, "Raw content file found, checking if corrupt or outdated...");
+
+            if(isContentCorrupted(rawFile)) {
+                Tracer.log(Tracer.INFO, "Raw content is corrupted, requesting from API...");
                 res = Requests.getRawFilteredContent();
-                saveRawContent(res, rawFile);
+
+                if(res.equals("fail")) Tracer.log(Tracer.MEDIUM_RISK, "API request failed, content will remain corrupted, try again later...");
+                else {
+                    Tracer.log(Tracer.INFO, "API request successful, saving new content...");
+                    saveRawContent(res, rawFile); // if not failed, save the content
+
+                }
+                
+            } else if(isContentOutdated(rawFile)) {
+                Tracer.log(Tracer.INFO, "Raw content is outdated, requesting from API...");
+                res = Requests.getRawFilteredContent();
+
+                if(res.equals("fail")) {
+                    Tracer.log(Tracer.MEDIUM_RISK, "API request failed, outdated content will be used...");
+                    res = loadRawContent(rawFile);
+                    // if the request fails, the content will be the same as the last one, so we don't need to save it again
+                } else {
+                    Tracer.log(Tracer.INFO, "API request successful, saving new content...");
+                    saveRawContent(res, rawFile); // if not failed, save the content
+                }
             } else {
-                Tracer.log(Tracer.INFO, "Raw content is up to date, loading from file...");
+                Tracer.log(Tracer.INFO, "Raw content is not corrupted and up to date, loading from file...");
                 res = loadRawContent(rawFile);
             }
 
@@ -50,13 +70,14 @@ public class ContestHandler {
         return res;
     }
 
-    private static String loadRawContent(File rawFile) {
-        String res = "";
+    private static String[] loadRawFile(File rawFile) {
+        // if everything is correct, the first line will be the date of the last update and the second line will be the content
+        String res[] = {"", ""};
         Scanner sc = null;
         try {
             sc = new Scanner(rawFile);
-            while(sc.hasNext()) {
-                res += sc.nextLine() + "\n";
+            for(int i = 0; sc.hasNext(); i++) {
+                res[i] = sc.nextLine();
             }
         } catch(Exception e) {
             e.printStackTrace();
@@ -67,21 +88,17 @@ public class ContestHandler {
         return res;
     }
 
+    private static String loadRawContent(File rawFile) {
+        String[] lines = loadRawFile(rawFile);
+
+        if(lines.length == 1) return "fail"; // if there's no content, we will provoke the 'chain reaction' from throwing "fail" and magic will happen
+        else return lines[1];
+    }
+
     private static boolean isContentOutdated(File rawFile) {
         boolean res = true; // assuming the file is outdated so if scanner fails or if there's wrong data it will retrieve data from api
-        Scanner sc = null;
         try {
-            sc = new Scanner(rawFile);
-            String lines[] = new String[2];
-            
-            for(int i = 0; sc.hasNext(); i++) {
-                lines[i] = sc.nextLine();
-            }
-
-            if(lines[1].contains("fail")) {
-                Tracer.log(Tracer.INFO, "Raw content is corrupted or wrong, next request will be from API.");
-                return true; // if the file is corrupted or the data is wrong, it will be considered outdated
-            }
+            String[] lines = loadRawFile(rawFile);
 
             if(lines[0].contains("datemillis:")) {
                 String millis = lines[0].substring(lines[0].indexOf(":") + 1);
@@ -96,11 +113,15 @@ public class ContestHandler {
 
         } catch(Exception e) {
             e.printStackTrace();
-        } finally {
-            sc.close();
         }
 
         return res;
+    }
+
+    private static boolean isContentCorrupted(File rawFile) {
+        String[] lines = loadRawFile(rawFile);
+
+        return lines[1].isBlank() || lines[1].equals("fail");
     }
 
     private static void saveRawContent(String content, File rawFile) {
