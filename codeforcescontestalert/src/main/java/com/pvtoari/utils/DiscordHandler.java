@@ -3,22 +3,14 @@ package com.pvtoari.utils;
 import com.pvtoari.bot.Config;
 import java.awt.Color;
 
-public class DiscordUtils {
+public class DiscordHandler {
     public static DiscordWebhook botWebhook = new DiscordWebhook(Config.DISCORD_WEBHOOK_URL);
 
     public static void sendFormattedContests() {
         if(!Config.DISCORD_WEBHOOK_ENABLED) return;
 
         String content = Requests.getFormatedUpcomingContests().replace("\n", "\\n");
-        botWebhook.setAvatarUrl(Config.DISCORD_WEBHOOK_AVATAR);
-        botWebhook.setUsername(Config.DISCORD_WEBHOOK_NAME);
-        botWebhook.addEmbed(new DiscordWebhook.EmbedObject().setTitle("Upcoming contests").setColor(Color.RED).setDescription(content));
-
-        try {
-            botWebhook.execute();
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
+        sendDefaultEmbeddedMessage("Upcoming contests", content, Color.RED);
     }
 
     public static void sendPlainText(String message) {
@@ -36,7 +28,24 @@ public class DiscordUtils {
         }
     }
 
-    public static void sendAlert() {
-        // TODO
+    public static void sendAlert(Contest contest) {
+        if(!Config.DISCORD_WEBHOOK_ENABLED) return;
+
+        String content = contest.getFormattedMessageContent().replace("\n", "\\n");
+        sendDefaultEmbeddedMessage("New contest listed!", content, Color.RED);
+    }
+
+    public static void sendDefaultEmbeddedMessage(String title, String description, Color color) {
+        if(!Config.DISCORD_WEBHOOK_ENABLED) return;
+
+        botWebhook.setAvatarUrl(Config.DISCORD_WEBHOOK_AVATAR);
+        botWebhook.setUsername(Config.DISCORD_WEBHOOK_NAME);
+        botWebhook.addEmbed(new DiscordWebhook.EmbedObject().setTitle(title).setColor(color).setDescription(description));
+
+        try {
+            botWebhook.execute();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 }

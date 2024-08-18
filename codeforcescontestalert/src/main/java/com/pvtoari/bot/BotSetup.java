@@ -28,6 +28,9 @@ public class BotSetup {
                 fw.write("DISCORD_WEBHOOK_URL=\n");
                 fw.write("DISCORD_WEBHOOK_NAME=Codeforces Contest Alert\n");
                 fw.write("DISCORD_WEBHOOK_AVATAR=\n");
+                fw.write("# Debug stuff\n");
+                fw.write("DEBUG_RAW_CONTENT=\n");
+                fw.write("DEBUG_FILTERED_RAW_CONTENT=\n");
                 fw.close();
 
                 System.out.println("Bot set up successfully.");

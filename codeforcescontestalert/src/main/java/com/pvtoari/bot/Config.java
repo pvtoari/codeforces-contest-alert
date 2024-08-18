@@ -19,9 +19,12 @@ public class Config {
     public static String DISCORD_WEBHOOK_URL;
     public static String DISCORD_WEBHOOK_NAME;
     public static String DISCORD_WEBHOOK_AVATAR;
+    // -------------------------------------- //
+    public static String DEBUG_RAW_CONTENT;
+    public static String DEBUG_FILTERED_RAW_CONTENT;
 
     private static String[] parseFieldsFromPropertiesFile() {
-        String[] res = new String[11];
+        String[] res = new String[13];
         Scanner fr = null;
 
         try {
@@ -56,5 +59,7 @@ public class Config {
         DISCORD_WEBHOOK_URL = fields[8];
         DISCORD_WEBHOOK_NAME = fields[9];
         DISCORD_WEBHOOK_AVATAR = fields[10];
+        DEBUG_RAW_CONTENT = fields[11];
+        DEBUG_FILTERED_RAW_CONTENT = fields[12];
     }
 }

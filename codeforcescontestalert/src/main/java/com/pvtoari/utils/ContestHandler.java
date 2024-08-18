@@ -3,6 +3,8 @@ package com.pvtoari.utils;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Scanner;
@@ -10,6 +12,11 @@ import java.util.Scanner;
 import com.pvtoari.bot.Config;
 
 public class ContestHandler {
+
+    public String currentRawContent = "";
+    public Thread thread;
+    public Contest[] currentContests;
+    
     /*
      * This class will be responsible for handling correctly contest data and requests to the Codeforces API
      * since its not correct to always request the API for the same data, this class will be responsible for
@@ -25,7 +32,91 @@ public class ContestHandler {
     // an alert system or something like that, the content will be updated every time a user requests it, which is not
     // the desired behavior, so i'll leave it like this for now and implement the thread later
 
-    public static String getRawFilteredContentv2() {
+    // update: i implemented the thread, but i'll leave the old code here because it can be useful in some cases
+
+    public void startHandling() {
+        String pastContent = currentRawContent;
+        if(pastContent.isBlank()) pastContent = getRawFilteredContentv2();
+
+        Contest[] pastContests = Contest.parseRawFilteredData(pastContent);
+        this.currentRawContent = getRawFilteredContentv2();
+        this.currentContests = Contest.parseRawFilteredData(currentRawContent);
+
+        final String[] pastContentHolder = new String[1];
+        final Contest[][] pastContestsHolder = new Contest[1][];
+        pastContentHolder[0] = pastContent;
+        pastContestsHolder[0] = pastContests;
+
+        checkForNewContests(pastContests, currentContests);
+        Thread t = new Thread(() -> {
+            while(true) {
+               // if im correct, the method will only check for outdated or corrupt data the first time it's called
+               // then it will only check if the data is outdated, im start to think that the method could be improved
+
+                try {
+                    Thread.sleep(Config.API_REQUEST_FREQUENCY);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                pastContentHolder[0] = currentRawContent;
+                pastContestsHolder[0] = null;
+    
+                Tracer.log(Tracer.INFO, "Contest handler is trying to update raw content.");
+                currentRawContent = getRawFilteredContentv2();
+                pastContestsHolder[0] = Contest.parseRawFilteredData(pastContentHolder[0]);
+
+                if(currentContests!= null) {
+                    pastContestsHolder[0] = Arrays.copyOf(currentContests, currentContests.length);
+                } else {
+                    Tracer.log(Tracer.HIGH_RISK, "Current contests are null, first time running? Actually this shouldn't run never oopsie");
+                }
+                this.currentContests = Contest.parseRawFilteredData(currentRawContent);
+
+                checkForNewContests(pastContests, currentContests);
+            }
+        });
+
+        this.thread = t;
+        t.start();
+    }
+
+    public void stopHandling() {
+        thread.interrupt();
+    }
+
+    // private static ArrayList<Contest> lookForNewContests(Contest[] older, Contest[] newer) {
+    //     ArrayList<Contest> res = new ArrayList<Contest>();
+
+    //     for(int i = 0; i < newer.length; i++) {
+    //         for(int j = 0; j < older.length; j++) {
+    //             if(newer[i].getId() == older[j].getId()) {
+    //                 res.add(newer[i]);
+    //             }
+    //         }
+    //     }
+
+    //     return res;
+    // }
+
+    private static void checkForNewContests(Contest[] older, Contest[] newer) {
+        if(!Contest.arraysEqual(older, newer)) {
+            Tracer.log(Tracer.INFO, "New contests found, sending alerts...");
+            ArrayList<Contest> newContests = Contest.arraysDiff(older, newer);
+
+            for(Contest c : newContests) {
+                DiscordHandler.sendAlert(c);
+            }
+
+        } else {
+            Tracer.log(Tracer.INFO, "No new contests found.");
+        }
+    }
+
+    private static String getRawFilteredContentv2() {
+        // since the content is updated every time a user requests it, we don't need to check if it's outdated
+        // but ill leave the code here because it can be helpful in some cases maybe idk
+
         Tracer.log(Tracer.INFO, "Determining source of raw content...");
         String res = "";
         File rawFile = new File("files/rawContent.txt");
@@ -67,6 +158,7 @@ public class ContestHandler {
 
         }
 
+        
         return res;
     }
 
@@ -123,6 +215,7 @@ public class ContestHandler {
 
         return lines[1].isBlank() || lines[1].equals("fail");
     }
+
 
     private static void saveRawContent(String content, File rawFile) {
         FileWriter fw = null;

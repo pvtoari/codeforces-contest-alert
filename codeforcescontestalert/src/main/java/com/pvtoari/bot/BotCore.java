@@ -10,7 +10,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-import com.pvtoari.utils.ContestHandler;
+import com.pvtoari.Main;
 import com.pvtoari.utils.Requests;
 import com.pvtoari.utils.Tracer;
 
@@ -77,7 +77,8 @@ public class BotCore implements LongPollingSingleThreadUpdateConsumer {
 
         Tracer.log(Tracer.INFO, "Sending filtered raw content to user " + user, update);
         //sendPlainText(update, chat_id, Requests.getRawFilteredContent()); this line is replaced by the new handler
-        sendPlainText(update, chat_id, ContestHandler.getRawFilteredContentv2());
+        //sendPlainText(update, chat_id, ContestHandler.getRawFilteredContentv2());
+        sendPlainText(update, chat_id, Main.globalContestHandler.currentRawContent);
     }
 
     private void sendFullRawContent(Update update, long chat_id) {

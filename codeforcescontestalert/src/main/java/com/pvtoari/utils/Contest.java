@@ -1,5 +1,6 @@
 package com.pvtoari.utils;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 import com.vdurmont.emoji.EmojiParser;
@@ -118,8 +119,41 @@ public class Contest implements Comparable<Contest> {
         return (int) (this.relativeTimeSeconds - o.relativeTimeSeconds);
     }
 
+    public boolean equals(Contest o) {
+        return this.id == o.id;
+    }
+
     public Date getDateTime() {
         return new Date(startTimeSeconds * 1000);
+    }
+
+    public static boolean arraysEqual(Contest[] a, Contest[] b) {
+        if(a.length != b.length) return false;
+
+        for(int i = 0; i < a.length; i++) {
+            if(!a[i].equals(b[i])) return false;
+        }
+
+        return true;
+    }
+
+    public static ArrayList<Contest> arraysDiff(Contest[] a, Contest[] b) {
+        ArrayList<Contest> diff = new ArrayList<>();
+
+        for (Contest contestB : b) {
+            boolean found = false;
+            for (Contest contestA : a) {
+                if (contestB.equals(contestA)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                diff.add(contestB);
+            }
+        }
+
+        return diff;
     }
 
     public static Contest[] parseRawFilteredData(String rawData) {

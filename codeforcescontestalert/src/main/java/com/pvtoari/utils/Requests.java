@@ -5,6 +5,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
 import com.pvtoari.bot.Config;
+import com.pvtoari.Main;
 
 import java.io.IOException;
 import java.util.*;
@@ -14,6 +15,9 @@ import org.apache.http.HttpResponse;
 public class Requests {
 
     public static String getRawCodeforcesContests() {
+
+        if(Config.debug) return (Config.DEBUG_RAW_CONTENT.isBlank() ? "fail" : Config.DEBUG_RAW_CONTENT);
+
         String res = "";
 
         CloseableHttpClient client = HttpClients.createDefault();
@@ -88,6 +92,8 @@ public class Requests {
 
     public static String getRawFilteredContent() {
 
+        if(Config.debug) return (Config.DEBUG_FILTERED_RAW_CONTENT.isBlank() ? "fail" : Config.DEBUG_FILTERED_RAW_CONTENT);
+
         Tracer.log(Tracer.HIGH_RISK, "Invoking raw content obtention...");
         String messageContent = getRawCodeforcesContests();
 
@@ -124,7 +130,8 @@ public class Requests {
         String res = "";
         Tracer.log(Tracer.LOW_RISK, "Parsing filtered data...");
         //Contest[] contests = Contest.parseRawFilteredData(getRawFilteredContent()); this line is replaced by the new handler
-        Contest[] contests = Contest.parseRawFilteredData(ContestHandler.getRawFilteredContentv2());
+        //Contest[] contests = Contest.parseRawFilteredData(ContestHandler.getRawFilteredContentv2());
+        Contest[] contests = Main.globalContestHandler.currentContests;
 
         if(contests==null) {
             Tracer.log(Tracer.MEDIUM_RISK, "Contest array parsing returned empty array, message might not be sent.");
